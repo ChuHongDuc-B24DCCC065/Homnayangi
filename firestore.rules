@@ -1,0 +1,90 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────────────────
+    // 📌 [GHI CHÚ THẦY HỎI]:
+    // 1. match /users/{uid}/{document=**}:
+    //    - Dùng wildcard {document=**} để bảo vệ CẢ document user VÀ TẤT CẢ sub-collections
+    //      (như 'foods' danh sách món, 'history' lịch sử quay).
+    //    - Điều kiện (request.auth.uid == uid): Đảm bảo chỉ chính chủ mới đọc/ghi được dữ liệu của mình.
+    // ─────────────────────────────────────────────
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == uid;
+    }
+
+    // ─────────────────────────────────────────────
+    // 📌 [GHI CHÚ THẦY HỎI]:
+    // 2. match /community/{postId}:
+    //    - Đọc (read): Mọi user đăng nhập đều được đọc bảng tin chung.
+    //    - Tạo (create): authorId trong dữ liệu bài đăng phải đúng là UID người gửi (chống giả mạo).
+    //    - Xóa (delete): Chỉ tác giả bài viết mới có quyền xóa.
+    //    - Sửa (update): Tác giả được sửa toàn bộ; NGƯỜI KHÁC CHỈ ĐƯỢC PHÉP sửa trường 'likes'
+    //      và 'commentCount' (dùng diff().affectedKeys().hasOnly(...)) khi họ bấm like/bình luận.
+    // ─────────────────────────────────────────────
+    match /community/{postId} {
+      allow read: if request.auth != null;
+
+      allow create: if request.auth != null
+                    && request.resource.data.authorId == request.auth.uid;
+
+      allow delete: if request.auth != null
+                    && resource.data.authorId == request.auth.uid;
+
+      allow update: if request.auth != null
+                    && (resource.data.authorId == request.auth.uid
+                        || request.resource.data.diff(resource.data).affectedKeys()
+                           .hasOnly(['likes', 'commentCount']));
+
+      // Sub-collection likes: mỗi user tạo 1 doc có id = UID của họ để đánh dấu đã like
+      match /likes/{userId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null
+                     && request.auth.uid == userId;
+      }
+
+      // Sub-collection comments trong bài viết: ai tạo comment thì authorId phải là UID của người đó
+      match /comments/{commentId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null
+                      && request.resource.data.authorId == request.auth.uid;
+        allow update, delete: if request.auth != null
+                              && resource.data.authorId == request.auth.uid;
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    // 📌 [GHI CHÚ THẦY HỎI]:
+    // 3. Collection Group 'comments':
+    //    - Cho phép truy vấn db.collectionGroup("comments") khi user đổi tên trong ProfileFragment
+    //      để cập nhật lại authorName trên tất cả bình luận cũ của họ.
+    // ─────────────────────────────────────────────
+    match /{path=**}/comments/{commentId} {
+      allow read: if request.auth != null;
+      allow update, delete: if request.auth != null
+                            && resource.data.authorId == request.auth.uid;
+    }
+
+    // ─────────────────────────────────────────────
+    // 📌 [GHI CHÚ THẦY HỎI]:
+    // 4. /library_foods:
+    //    - Thư viện món ăn gợi ý sẵn có. Cho phép đọc cho mọi user,
+    //      và cho phép 'create' để hỗ trợ seed dữ liệu mẫu lần đầu từ client.
+    // ─────────────────────────────────────────────
+    match /library_foods/{docId} {
+      allow read:   if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if false;
+    }
+
+    // ─────────────────────────────────────────────
+    // 📌 [GHI CHÚ THẦY HỎI]:
+    // 5. Chặn mặc định tất cả đường dẫn khác để đảm bảo an toàn tuyệt đối
+    // ─────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

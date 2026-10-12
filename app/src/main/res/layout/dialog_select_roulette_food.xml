@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ds_bg_warm"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- Top Navigation Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <ImageButton
+            android:id="@+id/btnBackDialog"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_revert"
+            app:tint="@color/ds_text_primary" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Chọn món để quay"
+            android:textColor="@color/ds_text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Chọn từ danh sách của bạn. Có thể chọn nhiều món."
+        android:textColor="@color/ds_text_secondary"
+        android:textSize="13sp"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tìm món ăn"
+        android:textColor="@color/ds_text_primary"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="?attr/textInputStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:endIconDrawable="@android:drawable/ic_menu_search"
+        app:endIconMode="custom">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edtSearchDialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Tìm trong món của tôi..."
+            android:inputType="text"
+            android:textColor="@color/ds_text_primary" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Chips (Mockup placeholders for now) -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <!-- Programmatically populated -->
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp">
+        
+        <TextView
+            android:id="@+id/tvSelectedCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đã chọn 0 mục"
+            android:textColor="@color/ds_text_secondary"
+            android:textSize="13sp"
+            android:layout_alignParentStart="true" />
+            
+        <TextView
+            android:id="@+id/btnClearSelection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bỏ chọn tất cả"
+            android:textColor="@color/ds_primary"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:layout_alignParentEnd="true" />
+    </RelativeLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewSelection"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Hai mục món ăn được giữ riêng. Bạn có thể bỏ chọn hoặc xóa bản trùng trong Món của tôi."
+        android:textColor="@color/ds_text_secondary"
+        android:textSize="11sp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnConfirmSelection"
+        style="?attr/materialButtonStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Dùng 4 món cho vòng quay"
+        android:textAllCaps="false"
+        app:icon="@android:drawable/ic_menu_agenda"
+        app:iconGravity="textStart"
+        app:iconTint="@color/white" />
+
+</LinearLayout>

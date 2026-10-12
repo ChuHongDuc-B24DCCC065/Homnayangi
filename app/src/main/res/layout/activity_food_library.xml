@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ds_bg_warm"
+    android:paddingTop="32dp">
+
+    <!-- Header Section -->
+    <LinearLayout
+        android:id="@+id/layoutTopSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Thư viện món ăn"
+            android:textColor="@color/ds_text_primary"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="24dp"
+            android:text="Khám phá món ngon, thêm vào danh sách riêng."
+            android:textColor="@color/ds_text_secondary"
+            android:textSize="13sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tìm trong thư viện"
+            android:textColor="@color/ds_text_primary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="?attr/textInputStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:startIconDrawable="@android:drawable/ic_menu_search"
+            app:endIconMode="clear_text">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtSearchLibrary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:hint="Tìm theo tên món..."
+                android:textColor="@color/ds_text_primary" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Category filter chips -->
+        <HorizontalScrollView
+            android:id="@+id/scrollCategories"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:scrollbars="none">
+            <LinearLayout
+                android:id="@+id/linearCategories"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical" />
+        </HorizontalScrollView>
+        
+        <!-- Status Row (Loading / Error) -->
+        <RelativeLayout
+            android:id="@+id/layoutStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:visibility="gone">
+            <TextView
+                android:id="@+id/tvStatusMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chưa tải được món ăn"
+                android:textColor="@color/ds_text_secondary"
+                android:textSize="13sp"
+                android:layout_centerVertical="true" />
+            
+            <TextView
+                android:id="@+id/btnRefreshStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Làm mới"
+                android:textColor="@color/ds_text_primary"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                app:drawableStartCompat="@android:drawable/ic_popup_sync"
+                android:drawablePadding="4dp" />
+        </RelativeLayout>
+
+        <!-- ERROR BANNER -->
+        <LinearLayout
+            android:id="@+id/layoutErrorBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_avatar_placeholder"
+            android:backgroundTint="#FFEBEE"
+            android:orientation="horizontal"
+            android:padding="12dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="12dp"
+                android:layout_gravity="center_vertical"
+                android:src="@android:drawable/ic_dialog_alert"
+                app:tint="#D32F2F" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Không thể kết nối thư viện"
+                    android:textColor="#C62828"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Danh sách của bạn vẫn được giữ nguyên."
+                    android:textColor="#B71C1C"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerLibrary"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/layoutTopSection"
+        android:layout_above="@id/btnLibBack"
+        android:clipToPadding="false"
+        android:paddingTop="12dp"
+        android:paddingBottom="24dp" />
+
+    <!-- ERROR STATE CENTERED -->
+    <LinearLayout
+        android:id="@+id/layoutErrorState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/layoutTopSection"
+        android:layout_above="@id/btnLibBack"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingHorizontal="40dp"
+        android:visibility="gone">
+
+        <FrameLayout
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:background="@drawable/bg_avatar_placeholder">
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:src="@android:drawable/ic_delete"
+                app:tint="@color/ds_primary" />
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Thử kết nối lại nhé"
+            android:textColor="@color/ds_text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textAlignment="center" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Kiểm tra Wi-Fi hoặc dữ liệu di động, sau đó tải lại các món gợi ý."
+            android:textColor="@color/ds_text_secondary"
+            android:textSize="13sp"
+            android:lineSpacingExtra="4dp"
+            android:textAlignment="center" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRetryConnect"
+            style="?attr/materialButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Thử lại"
+            android:textAllCaps="false" />
+    </LinearLayout>
+
+    <!-- Bottom Back Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLibBack"
+        style="@style/Widget.Homnayangi.Button.Secondary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="24dp"
+        android:text="Về món của tôi"
+        android:textAllCaps="false" />
+
+</RelativeLayout>

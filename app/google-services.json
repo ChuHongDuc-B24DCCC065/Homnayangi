@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "412521528998",
+    "project_id": "homnayangi-b84da",
+    "storage_bucket": "homnayangi-b84da.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:412521528998:android:d6e5752106eeea30ca7e67",
+        "android_client_info": {
+          "package_name": "com.example.homnayangi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "412521528998-5ndgf637irp99548l6loair7fg64p5ji.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.homnayangi",
+            "certificate_hash": "ee0709f0def703e1eb14054a1ddf1d4d5db07c3a"
+          }
+        },
+        {
+          "client_id": "412521528998-5oek8l1gehk83on463jm0jietecaguh8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYOGnfkDTpPlbOXOwVa9yw-B5khN5W1P4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "412521528998-5oek8l1gehk83on463jm0jietecaguh8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

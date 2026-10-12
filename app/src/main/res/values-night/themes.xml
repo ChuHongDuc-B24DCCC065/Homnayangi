@@ -1,0 +1,18 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Homnayangi" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <item name="colorPrimary">@color/ds_primary</item>
+        <item name="colorOnPrimary">@color/ds_surface</item>
+        <item name="colorSurface">@color/ds_surface</item>
+        <item name="colorOnSurface">@color/ds_text_primary</item>
+        <item name="colorError">@color/ds_warning_delete</item>
+        <item name="android:colorBackground">@color/ds_bg_warm</item>
+        <item name="android:windowBackground">@color/ds_bg_warm</item>
+        <item name="android:textColorPrimary">@color/ds_text_primary</item>
+        <item name="android:textColorSecondary">@color/ds_text_secondary</item>
+        
+        <item name="materialButtonStyle">@style/Widget.Homnayangi.Button.Primary</item>
+        <item name="textInputStyle">@style/Widget.Homnayangi.TextInputLayout</item>
+    </style>
+</resources>

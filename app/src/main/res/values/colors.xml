@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="transparent">#00000000</color>
+
+    <color name="ds_primary">#C95116</color>
+    <color name="ds_bg_warm">#FAF8F5</color>
+    <color name="ds_surface">#FFFFFF</color>
+    
+    <color name="ds_text_primary">#29251F</color>
+    <color name="ds_text_secondary">#756E65</color>
+    <color name="ds_text_disabled">#928B81</color>
+    <color name="ds_text_roulette">#43372C</color>
+    
+    <color name="ds_border">#E5DFD6</color>
+    
+    <color name="ds_success">#277454</color>
+    <color name="ds_warning_delete">#B83D36</color>
+    
+    <color name="ds_bg_selection_info">#FFF0E5</color>
+    <color name="ds_bg_success">#EAF5EE</color>
+    <color name="ds_bg_error_delete">#FCEDEA</color>
+    <color name="ds_bg_disabled">#EEEAE4</color>
+</resources>

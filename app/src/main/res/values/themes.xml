@@ -1,0 +1,64 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Homnayangi" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <item name="colorPrimary">@color/ds_primary</item>
+        <item name="colorOnPrimary">@color/ds_surface</item>
+        <item name="colorSurface">@color/ds_surface</item>
+        <item name="colorOnSurface">@color/ds_text_primary</item>
+        <item name="colorError">@color/ds_warning_delete</item>
+        <item name="android:colorBackground">@color/ds_bg_warm</item>
+        <item name="android:windowBackground">@color/ds_bg_warm</item>
+        <item name="android:textColorPrimary">@color/ds_text_primary</item>
+        <item name="android:textColorSecondary">@color/ds_text_secondary</item>
+        
+        <item name="materialButtonStyle">@style/Widget.Homnayangi.Button.Primary</item>
+        <item name="textInputStyle">@style/Widget.Homnayangi.TextInputLayout</item>
+    </style>
+
+    <style name="Theme.Homnayangi" parent="Base.Theme.Homnayangi" />
+
+    <!-- Style cho avatar hình tròn -->
+    <style name="CircleImageStyle">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <!-- Buttons -->
+    <style name="Widget.Homnayangi.Button.Primary" parent="Widget.Material3.Button">
+        <item name="android:minHeight">50dp</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="backgroundTint">@color/ds_primary</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="Widget.Homnayangi.Button.Secondary" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">50dp</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="strokeColor">@color/ds_border</item>
+        <item name="android:textColor">@color/ds_text_primary</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    
+    <style name="Widget.Homnayangi.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:minHeight">50dp</item>
+        <item name="android:textColor">@color/ds_primary</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="rippleColor">@color/ds_primary</item>
+    </style>
+
+    <!-- Text Input -->
+    <style name="Widget.Homnayangi.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="android:minHeight">52dp</item>
+        <item name="boxCornerRadiusTopStart">8dp</item>
+        <item name="boxCornerRadiusTopEnd">8dp</item>
+        <item name="boxCornerRadiusBottomStart">8dp</item>
+        <item name="boxCornerRadiusBottomEnd">8dp</item>
+        <item name="boxStrokeColor">@color/ds_border</item>
+        <item name="hintTextColor">@color/ds_text_secondary</item>
+    </style>
+</resources>
