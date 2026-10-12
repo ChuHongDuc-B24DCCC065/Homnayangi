@@ -19,6 +19,15 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             // Bật minify: xóa code thừa + obfuscate tên class/method
@@ -31,6 +40,7 @@ android {
             )
         }
         debug {
+            signingConfig = signingConfigs.getByName("debug")
             // Tắt minify khi debug để stacktrace dễ đọc
             optimization {
                 enable = false
