@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment;
 import com.example.homnayangi.R;
 import com.example.homnayangi.repository.FoodRepository;
 import com.example.homnayangi.utils.ConfettiView;
+import com.example.homnayangi.utils.MapUtils;
 import com.example.homnayangi.utils.RouletteWheelView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
@@ -108,15 +109,25 @@ public class HomeFragment extends Fragment {
             btnClearPool.setVisibility(View.VISIBLE);
 
             linearPool.removeAllViews();
+            int marginEndPx = (int) (8 * getResources().getDisplayMetrics().density);
             for (FoodRepository.RouletteItem item : pool) {
                 Chip chip = new Chip(requireContext());
                 chip.setText(item.name);
                 chip.setCloseIconVisible(true);
                 chip.setChipBackgroundColorResource(R.color.chip_choice_background);
+                chip.setEnsureMinTouchTargetSize(false);
                 chip.setOnCloseIconClickListener(v -> {
                     repo.removeFromRoulettePool(item.id);
                     refreshPool();
                 });
+
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+                lp.setMarginEnd(marginEndPx);
+                chip.setLayoutParams(lp);
+
                 linearPool.addView(chip);
             }
         }
@@ -153,20 +164,10 @@ public class HomeFragment extends Fragment {
             // Hiện popup kết quả
             new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                     .setTitle("🎉 Hôm nay ăn gì?")
-                    .setMessage("Kết quả vòng quay:\n\n🍽️ " + selected.name + "\n\nChúc bạn ngon miệng!")
+                    .setMessage("Kết quả vòng quay:\n\n🍽️ " + selected.name + "\n\nChúc bạn có một bữa ăn thật ngon miệng!")
                     .setPositiveButton("Tuyệt vời! 🤩", null)
-                    .setNeutralButton("📍 Tìm quán gần đây", (dialog, which) -> {
-                        Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + Uri.encode("quán " + selected.name + " gần đây"));
-                        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-                        mapIntent.setPackage("com.google.android.apps.maps"); // Khuyến khích mở bằng app Google Maps
-                        // Đảm bảo máy có app xử lý intent này
-                        if (mapIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
-                            startActivity(mapIntent);
-                        } else {
-                            // Xóa package để mở bằng trình duyệt nếu không có app Maps
-                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-                            startActivity(browserIntent);
-                        }
+                    .setNeutralButton("📍 Tìm quán ăn ngay", (dialog, which) -> {
+                        MapUtils.findNearbyRestaurants(requireContext(), selected.name);
                     })
                     .show();
 

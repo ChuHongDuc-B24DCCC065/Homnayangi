@@ -66,10 +66,8 @@ public class RouletteWheelView extends View {
 
         paintText = new Paint(Paint.ANTI_ALIAS_FLAG);
         paintText.setColor(Color.WHITE);
-        paintText.setTextSize(30f);
-        paintText.setTextAlign(Paint.Align.LEFT);
         paintText.setFakeBoldText(true);
-        paintText.setShadowLayer(3f, 1f, 1f, Color.DKGRAY);
+        paintText.setShadowLayer(5f, 1.5f, 1.5f, Color.argb(180, 0, 0, 0));
 
         rectF = new RectF();
     }
@@ -106,13 +104,13 @@ public class RouletteWheelView extends View {
 
             float x = rectF.centerX();
             float y = rectF.centerY();
+            float density = getResources().getDisplayMetrics().scaledDensity;
             paintText.setTextAlign(Paint.Align.CENTER);
-            paintText.setColor(0xFF9E9E9E);
-            canvas.drawText("Chưa có món", x, y - 8, paintText);
-            paintText.setTextSize(22f);
-            canvas.drawText("Thêm món ở tab Món ăn", x, y + 22, paintText);
-            paintText.setTextSize(30f);
-            paintText.setTextAlign(Paint.Align.LEFT);
+            paintText.setColor(0xFF757575);
+            paintText.setTextSize(16f * density);
+            canvas.drawText("Chưa có món", x, y - (6f * density), paintText);
+            paintText.setTextSize(13f * density);
+            canvas.drawText("Thêm món ở tab Món ăn", x, y + (18f * density), paintText);
             paintText.setColor(Color.WHITE);
             return;
         }
@@ -120,6 +118,26 @@ public class RouletteWheelView extends View {
         int count = items.size();
         float sweepAngle = 360f / count;
         float startAngle = -90f; // Bắt đầu từ đỉnh
+
+        // Cỡ chữ theo sp tính dựa trên số lượng món để đảm bảo luôn to rõ
+        float baseTextSizeSp;
+        if (count <= 2) {
+            baseTextSizeSp = 18f;
+        } else if (count <= 4) {
+            baseTextSizeSp = 16f;
+        } else if (count <= 8) {
+            baseTextSizeSp = 14f;
+        } else {
+            baseTextSizeSp = 12f;
+        }
+        float scaledDensity = getResources().getDisplayMetrics().scaledDensity;
+        float baseTextSizePx = baseTextSizeSp * scaledDensity;
+
+        float centerX = rectF.centerX();
+        float centerY = rectF.centerY();
+        float radius = rectF.width() / 2f;
+        // Đặt vị trí chữ ở khoảng 58% bán kính (nằm ngay giữa dải quạt)
+        float textRadius = radius * 0.58f;
 
         for (int i = 0; i < count; i++) {
             // Vẽ mảnh bánh
@@ -131,25 +149,42 @@ public class RouletteWheelView extends View {
             paintBorder.setStrokeWidth(2f);
             canvas.drawArc(rectF, startAngle, sweepAngle, true, paintBorder);
 
-            // Vẽ chữ
-            canvas.save();
-            float centerX = rectF.centerX();
-            float centerY = rectF.centerY();
-
-            // Xoay canvas để viết chữ từ tâm ra
-            canvas.translate(centerX, centerY);
-            canvas.rotate(startAngle + sweepAngle / 2);
-
+            // Xử lý text
             String text = items.get(i).name;
-            if (text != null && text.length() > 10) {
-                text = text.substring(0, 8) + "..."; // Cắt ngắn nếu quá dài
+            if (text == null) text = "";
+            text = text.trim();
+            // Nếu quá dài mới cắt bớt
+            if (text.length() > 16) {
+                text = text.substring(0, 14) + "...";
             }
 
-            // Vẽ text cách tâm một chút
-            float textOffset = rectF.width() / 5;
-            // Tính căn giữa theo chiều dọc
-            float textHeight = paintText.descent() - paintText.ascent();
-            canvas.drawText(text, textOffset, textHeight / 4, paintText);
+            // Tự điều chỉnh cỡ chữ nếu tên dài hơn 10 ký tự
+            float itemTextSize = baseTextSizePx;
+            if (text.length() > 11) {
+                itemTextSize = baseTextSizePx * 0.85f;
+            }
+            paintText.setTextSize(itemTextSize);
+
+            // Góc chính giữa của mảnh quạt hiện tại
+            float midAngle = startAngle + sweepAngle / 2f;
+            float normalizedAngle = (midAngle % 360f + 360f) % 360f;
+
+            canvas.save();
+            canvas.translate(centerX, centerY);
+
+            // Nếu góc nằm ở nửa bên trái (90 -> 270 độ), lật 180 độ để chữ không bị lộn ngược đầu
+            boolean flip = (normalizedAngle > 90f && normalizedAngle < 270f);
+            if (flip) {
+                canvas.rotate(midAngle + 180f);
+                paintText.setTextAlign(Paint.Align.CENTER);
+                float textY = (paintText.descent() + paintText.ascent()) / 2f;
+                canvas.drawText(text, -textRadius, -textY, paintText);
+            } else {
+                canvas.rotate(midAngle);
+                paintText.setTextAlign(Paint.Align.CENTER);
+                float textY = (paintText.descent() + paintText.ascent()) / 2f;
+                canvas.drawText(text, textRadius, -textY, paintText);
+            }
 
             canvas.restore();
             startAngle += sweepAngle;
@@ -162,9 +197,9 @@ public class RouletteWheelView extends View {
 
         // Vẽ tâm
         paintCenter.setColor(Color.WHITE);
-        canvas.drawCircle(rectF.centerX(), rectF.centerY(), 20, paintCenter);
+        canvas.drawCircle(centerX, centerY, 20, paintCenter);
         paintCenter.setColor(0xFFFF6B35);
-        canvas.drawCircle(rectF.centerX(), rectF.centerY(), 14, paintCenter);
+        canvas.drawCircle(centerX, centerY, 14, paintCenter);
     }
 
     public void spin(OnSpinEndListener listener) {

@@ -146,6 +146,29 @@
                     android:textColor="@color/ds_text_secondary"
                     android:textSize="13sp" />
             </LinearLayout>
+
+            <!-- Nút Tìm quán gần đây -->
+            <LinearLayout
+                android:id="@+id/btnFindRestaurantAction"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="horizontal">
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@android:drawable/ic_dialog_map"
+                    app:tint="@color/ds_primary" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="Quán"
+                    android:textColor="@color/ds_primary"
+                    android:textStyle="bold"
+                    android:textSize="13sp" />
+            </LinearLayout>
             
             <!-- Nút Thêm vào vòng quay -->
             <LinearLayout
