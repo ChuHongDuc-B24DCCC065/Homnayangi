@@ -29,6 +29,7 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
         void onDeleteClick(int position);
         void onAddToRouletteClick(int position);
         void onFavoriteClick(int position);
+        void onFindRestaurantClick(int position);
     }
 
     public void setFirestoreFoodList(List<DocumentSnapshot> docs) {
@@ -123,6 +124,12 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
             int pos = holder.getBindingAdapterPosition();
             if (listener != null && pos != RecyclerView.NO_POSITION) listener.onAddToRouletteClick(pos);
         });
+        if (holder.btnFindRestaurantAction != null) {
+            holder.btnFindRestaurantAction.setOnClickListener(v -> {
+                int pos = holder.getBindingAdapterPosition();
+                if (listener != null && pos != RecyclerView.NO_POSITION) listener.onFindRestaurantClick(pos);
+            });
+        }
     }
 
     @Override
@@ -132,7 +139,7 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
 
     public static class FoodViewHolder extends RecyclerView.ViewHolder {
         ImageView imgFavorite, imgAddToRoulette;
-        View btnEditAction, btnDeleteAction, btnFavoriteAction, btnAddToRouletteAction;
+        View btnEditAction, btnDeleteAction, btnFavoriteAction, btnAddToRouletteAction, btnFindRestaurantAction;
         TextView tvFoodName, tvCategory, tvPrice, tvFoodRecipe, tvAddToRoulette;
 
         public FoodViewHolder(@NonNull View itemView) {
@@ -142,6 +149,7 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
             btnDeleteAction   = itemView.findViewById(R.id.btnDeleteAction);
             btnFavoriteAction = itemView.findViewById(R.id.btnFavoriteAction);
             btnAddToRouletteAction = itemView.findViewById(R.id.btnAddToRouletteAction);
+            btnFindRestaurantAction = itemView.findViewById(R.id.btnFindRestaurantAction);
             imgAddToRoulette  = itemView.findViewById(R.id.imgAddToRoulette);
             tvAddToRoulette   = itemView.findViewById(R.id.tvAddToRoulette);
             tvFoodName        = itemView.findViewById(R.id.tvFoodName);

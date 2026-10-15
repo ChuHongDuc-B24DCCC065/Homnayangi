@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.homnayangi.R;
 import com.example.homnayangi.adapters.FoodAdapter;
 import com.example.homnayangi.repository.FoodRepository;
+import com.example.homnayangi.utils.MapUtils;
 import com.example.homnayangi.utils.VietnameseUtils;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -168,12 +169,21 @@ public class FoodListFragment extends Fragment implements FoodAdapter.OnFoodItem
                 || categoryValue != null && categoryValue.equals(selectedCategory));
         chip.setChipBackgroundColorResource(R.color.chip_choice_background);
         chip.setCheckedIconTint(android.content.res.ColorStateList.valueOf(0xFFFF6B35));
+        chip.setEnsureMinTouchTargetSize(false);
         chip.setOnClickListener(v -> {
             selectedCategory = categoryValue;
             // Cập nhật trạng thái checked của tất cả chips
             updateCategoryChips();
             applyFilter();
         });
+
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        int marginEndPx = (int) (8 * getResources().getDisplayMetrics().density);
+        lp.setMarginEnd(marginEndPx);
+        chip.setLayoutParams(lp);
 
         linearCategories.addView(chip);
     }
@@ -399,6 +409,25 @@ public class FoodListFragment extends Fragment implements FoodAdapter.OnFoodItem
                 if (getContext() != null)
                     Toast.makeText(getContext(), "Lỗi: " + error, Toast.LENGTH_SHORT).show();
             }
+        });
+    }
+
+    @Override
+    public void onFindRestaurantClick(int position) {
+        if (position < 0 || position >= filteredDocs.size()) return;
+        DocumentSnapshot doc = filteredDocs.get(position);
+        String name = doc.getString("name");
+        Double price = doc.getDouble("price");
+
+        if (name == null || name.trim().isEmpty()) return;
+
+        // 1. Mở bản đồ tìm quán ăn gần đây
+        MapUtils.findNearbyRestaurants(requireContext(), name);
+
+        // 2. Ghi nhận vào lịch sử ăn uống / chi tiêu
+        repo.addHistory(name, price != null ? price : 0, new FoodRepository.OnCompleteListener() {
+            @Override public void onSuccess() {}
+            @Override public void onFailure(String error) {}
         });
     }
 }
