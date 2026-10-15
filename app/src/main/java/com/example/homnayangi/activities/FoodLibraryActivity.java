@@ -6,6 +6,7 @@ import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -202,11 +203,20 @@ public class FoodLibraryActivity extends AppCompatActivity {
                 || categoryValue != null && categoryValue.equals(selectedCategory));
         chip.setChipBackgroundColorResource(R.color.chip_choice_background);
         chip.setCheckedIconTint(android.content.res.ColorStateList.valueOf(0xFFFF6B35));
+        chip.setEnsureMinTouchTargetSize(false);
         chip.setOnClickListener(v -> {
             selectedCategory = categoryValue;
             updateCategoryChips();
             applyFilter();
         });
+
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        int marginEndPx = (int) (8 * getResources().getDisplayMetrics().density);
+        lp.setMarginEnd(marginEndPx);
+        chip.setLayoutParams(lp);
 
         linearCategories.addView(chip);
     }

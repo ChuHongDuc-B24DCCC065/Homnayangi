@@ -16,6 +16,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 
 import com.example.homnayangi.R;
 import com.example.homnayangi.repository.FoodRepository;
+import com.example.homnayangi.utils.MapUtils;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.text.DecimalFormat;
@@ -90,15 +91,29 @@ public class FoodLibraryAdapter extends RecyclerView.Adapter<FoodLibraryAdapter.
         boolean isAdded = name != null && userFoodMap.containsKey(name);
 
         if (isAdded) {
-            holder.btnAdd.setText("Đã thêm ✓ (Bấm để bỏ)");
+            holder.btnAdd.setText("Đã thêm ✓");
             holder.btnAdd.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFF4CAF50));
             holder.btnAdd.setTextColor(0xFFFFFFFF);
         } else {
-            holder.btnAdd.setText("+ Thêm vào danh sách của tôi");
+            holder.btnAdd.setText("+ Thêm món");
             holder.btnAdd.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFFFFFFF));
             holder.btnAdd.setTextColor(0xFF29251F);
         }
         holder.btnAdd.setEnabled(true);
+
+        // Nút Tìm quán gần đây
+        if (holder.btnFindRestaurant != null) {
+            holder.btnFindRestaurant.setOnClickListener(v -> {
+                if (name != null && !name.trim().isEmpty()) {
+                    MapUtils.findNearbyRestaurants(v.getContext(), name);
+                    // Tự động ghi lại lịch sử ăn uống
+                    repo.addHistory(name, price, new FoodRepository.OnCompleteListener() {
+                        @Override public void onSuccess() {}
+                        @Override public void onFailure(String error) {}
+                    });
+                }
+            });
+        }
 
         holder.btnAdd.setOnClickListener(v -> {
             holder.btnAdd.setEnabled(false);
@@ -158,17 +173,18 @@ public class FoodLibraryAdapter extends RecyclerView.Adapter<FoodLibraryAdapter.
 
     public static class LibViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvCategory, tvPrice, tvRecipe;
-        Button btnAdd;
+        Button btnAdd, btnFindRestaurant;
         ImageView imgFood;
 
         public LibViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvName    = itemView.findViewById(R.id.tvLibFoodName);
-            tvCategory = itemView.findViewById(R.id.tvLibCategory);
-            tvPrice   = itemView.findViewById(R.id.tvLibPrice);
-            tvRecipe  = itemView.findViewById(R.id.tvLibRecipe);
-            btnAdd    = itemView.findViewById(R.id.btnAddFromLib);
-            imgFood   = itemView.findViewById(R.id.imgLibFood);
+            tvName             = itemView.findViewById(R.id.tvLibFoodName);
+            tvCategory         = itemView.findViewById(R.id.tvLibCategory);
+            tvPrice            = itemView.findViewById(R.id.tvLibPrice);
+            tvRecipe           = itemView.findViewById(R.id.tvLibRecipe);
+            btnAdd             = itemView.findViewById(R.id.btnAddFromLib);
+            btnFindRestaurant  = itemView.findViewById(R.id.btnFindRestaurantLib);
+            imgFood            = itemView.findViewById(R.id.imgLibFood);
         }
     }
 }
