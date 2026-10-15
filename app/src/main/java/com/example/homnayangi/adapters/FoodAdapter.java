@@ -64,9 +64,9 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
         DecimalFormat fmt = new DecimalFormat("#,###");
         holder.tvPrice.setText(price != null ? "💰 " + fmt.format(price) + " VNĐ" : "");
 
-        // 📌 [GHI CHÚ]: Cơ chế xem thêm / thu gọn công thức (Expandable TextView)
-        // Mặc định hiện 2 dòng xem trước, bấm vào sẽ mở rộng đầy đủ (Integer.MAX_VALUE) hoặc thu gọn lại
-        String recipe = doc.getString("recipe");
+        // 📌 [GHI CHÚ]: Đọc "note" (mới) với fallback "recipe" (cũ) — backward compat
+        String recipe = doc.getString("note");
+        if (recipe == null) recipe = doc.getString("recipe");
         if (recipe != null && !recipe.trim().isEmpty()) {
             holder.tvFoodRecipe.setVisibility(View.VISIBLE);
             holder.tvFoodRecipe.setText(recipe);

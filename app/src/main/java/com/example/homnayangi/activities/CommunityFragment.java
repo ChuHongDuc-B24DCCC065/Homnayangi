@@ -1,8 +1,11 @@
 package com.example.homnayangi.activities;
 
 import android.app.AlertDialog;
+import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,9 +26,14 @@ import com.example.homnayangi.R;
 import com.example.homnayangi.adapters.CommentAdapter;
 import com.example.homnayangi.adapters.CommunityAdapter;
 import com.example.homnayangi.repository.FoodRepository;
+import com.example.homnayangi.utils.CloudinaryUploader;
+import com.example.homnayangi.utils.PriceFormatWatcher;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.bumptech.glide.Glide;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 public class CommunityFragment extends Fragment {
 
@@ -34,6 +42,20 @@ public class CommunityFragment extends Fragment {
     private Button btnPost;
     private View bannerLoginPrompt;
     private FoodRepository repo;
+    private Uri selectedPostImageUri = null;
+    private ImageView imgPostPreview;
+    private View cardPostPreview;
+
+    private final ActivityResultLauncher<Intent> postImagePicker =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    selectedPostImageUri = result.getData().getData();
+                    if (imgPostPreview != null) {
+                        if (cardPostPreview != null) cardPostPreview.setVisibility(View.VISIBLE);
+                        Glide.with(this).load(selectedPostImageUri).into(imgPostPreview);
+                    }
+                }
+            });
 
     @Nullable
     @Override
@@ -179,6 +201,20 @@ public class CommunityFragment extends Fragment {
         Button btnCancel = dialogView.findViewById(R.id.btnCancelPost);
         Button btnSubmit = dialogView.findViewById(R.id.btnSubmitPost);
 
+        // 📌 Image picker setup
+        Button btnPickImage = dialogView.findViewById(R.id.btnPickPostImage);
+        imgPostPreview = dialogView.findViewById(R.id.imgPostPreview);
+        cardPostPreview = dialogView.findViewById(R.id.cardPostPreview);
+        selectedPostImageUri = null;
+
+        // 📌 Gắn PriceFormatWatcher tự động format số tiền
+        edtPrice.addTextChangedListener(new PriceFormatWatcher(edtPrice));
+
+        btnPickImage.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            postImagePicker.launch(intent);
+        });
+
         btnCancel.setOnClickListener(v -> dialog.dismiss());
 
         btnSubmit.setOnClickListener(v -> {
@@ -190,27 +226,57 @@ public class CommunityFragment extends Fragment {
 
             String restaurant = edtRestaurant.getText().toString().trim();
             String note = edtNote.getText().toString().trim();
-            double price = 0;
-            try {
-                price = Double.parseDouble(edtPrice.getText().toString().trim());
-            } catch (NumberFormatException ignored) {}
+            double price = PriceFormatWatcher.getCleanValue(edtPrice);
 
             btnSubmit.setEnabled(false);
+            btnSubmit.setText("Đang đăng...");
 
-            repo.postToCommunity(foodName, restaurant, note, price, new FoodRepository.OnCompleteListener() {
-                @Override
-                public void onSuccess() { }
-                @Override
-                public void onFailure(String error) {
-                    if (getContext() != null)
-                        Toast.makeText(getContext(), "Lỗi: " + error, Toast.LENGTH_SHORT).show();
-                }
-            });
+            final double finalPrice = price;
+            final String fFoodName = foodName;
+            final String fRestaurant = restaurant;
+            final String fNote = note;
 
-            Toast.makeText(getContext(), "Đang chia sẻ... 🎉", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
+            if (selectedPostImageUri != null) {
+                // Upload ảnh trước, rồi đăng bài
+                CloudinaryUploader.upload(requireContext(), selectedPostImageUri, "community",
+                        new CloudinaryUploader.UploadListener() {
+                            @Override
+                            public void onSuccess(String imageUrl) {
+                                repo.postToCommunity(fFoodName, fRestaurant, fNote, finalPrice, imageUrl,
+                                        createPostCallback());
+                                Toast.makeText(getContext(), "Đang chia sẻ... 🎉", Toast.LENGTH_SHORT).show();
+                                dialog.dismiss();
+                            }
+
+                            @Override
+                            public void onError(String message) {
+                                // Upload lỗi → đăng không ảnh
+                                repo.postToCommunity(fFoodName, fRestaurant, fNote, finalPrice, "",
+                                        createPostCallback());
+                                Toast.makeText(getContext(), "Đăng bài (không có ảnh)", Toast.LENGTH_SHORT).show();
+                                dialog.dismiss();
+                            }
+                        });
+            } else {
+                // Không có ảnh
+                repo.postToCommunity(fFoodName, fRestaurant, fNote, finalPrice, "", createPostCallback());
+                Toast.makeText(getContext(), "Đang chia sẻ... 🎉", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+            }
         });
 
         dialog.show();
+    }
+
+    private FoodRepository.OnCompleteListener createPostCallback() {
+        return new FoodRepository.OnCompleteListener() {
+            @Override
+            public void onSuccess() { }
+            @Override
+            public void onFailure(String error) {
+                if (getContext() != null)
+                    Toast.makeText(getContext(), "Lỗi: " + error, Toast.LENGTH_SHORT).show();
+            }
+        };
     }
 }

@@ -11,9 +11,8 @@
     <color name="ds_text_primary">#29251F</color>
     <color name="ds_text_secondary">#756E65</color>
     <color name="ds_text_disabled">#928B81</color>
-    <color name="ds_text_roulette">#43372A</color>
+    <color name="ds_text_roulette">#43372C</color>
     <color name="ds_border">#E5DFD6</color>
-    
     <color name="ds_success">#277454</color>
     <color name="ds_warning_delete">#B83D36</color>
     

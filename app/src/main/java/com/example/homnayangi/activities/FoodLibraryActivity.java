@@ -146,6 +146,12 @@ public class FoodLibraryActivity extends AppCompatActivity {
                     allLibraryDocs = value.getDocuments();
                     updateCategoryChips();
                     applyFilter();
+
+                    // 📌 Đồng bộ nếu Firestore có ít hơn local database
+                    int localCount = FoodLibraryDatabase.getFoods().size();
+                    if (allLibraryDocs.size() < localCount) {
+                        seedLibraryToFirestore();
+                    }
                 }
             }
         });
@@ -272,7 +278,7 @@ public class FoodLibraryActivity extends AppCompatActivity {
                     data.put("name", item.name);
                     data.put("category", item.category);
                     data.put("price", item.price);
-                    data.put("recipe", item.recipe);
+                    data.put("note", item.note);
                     if (item.imageUrl != null && !item.imageUrl.isEmpty()) {
                         data.put("imageUrl", item.imageUrl);
                     }

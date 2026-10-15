@@ -85,7 +85,7 @@ public class FoodRepository {
         food.put("name", name);
         food.put("category", category);
         food.put("price", price);
-        food.put("recipe", recipe != null ? recipe : "");
+        food.put("note", recipe != null ? recipe : "");
         if (imageUrl != null && !imageUrl.isEmpty()) {
             food.put("imageUrl", imageUrl);
         }
@@ -110,7 +110,7 @@ public class FoodRepository {
         updates.put("name", name);
         updates.put("category", category);
         updates.put("price", price);
-        updates.put("recipe", recipe != null ? recipe : "");
+        updates.put("note", recipe != null ? recipe : "");
 
         db.collection("users").document(uid)
                 .collection("foods").document(foodId)
@@ -224,6 +224,10 @@ public class FoodRepository {
     }
 
     public void postToCommunity(String foodName, String restaurantName, String note, double price, OnCompleteListener listener) {
+        postToCommunity(foodName, restaurantName, note, price, "", listener);
+    }
+
+    public void postToCommunity(String foodName, String restaurantName, String note, double price, String imageUrl, OnCompleteListener listener) {
         String uid = getUid();
         if (uid == null) {
             listener.onFailure("Người dùng chưa đăng nhập");
@@ -235,6 +239,7 @@ public class FoodRepository {
         post.put("restaurantName", restaurantName);
         post.put("note", note);
         post.put("price", price);
+        post.put("imageUrl", imageUrl != null ? imageUrl : "");
         post.put("authorName", getDisplayName());
         post.put("authorId", uid);
         post.put("timestamp", System.currentTimeMillis());

@@ -23,6 +23,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.homnayangi.R;
+import com.example.homnayangi.utils.PriceFormatWatcher;
 import com.example.homnayangi.utils.ReminderReceiver;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
@@ -34,6 +35,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.WriteBatch;
 
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -46,6 +48,9 @@ public class ProfileFragment extends Fragment {
     private MaterialAutoCompleteTextView spinnerGender;
     private MaterialButton btnSaveProfile, btnLogout;
     private com.google.android.material.switchmaterial.SwitchMaterial switchReminder;
+    private com.google.android.material.switchmaterial.SwitchMaterial switchBudget;
+    private View layoutBudgetInput;
+    private TextInputEditText edtBudget;
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
@@ -80,6 +85,17 @@ public class ProfileFragment extends Fragment {
         btnSaveProfile   = view.findViewById(R.id.btnSaveProfile);
         btnLogout        = view.findViewById(R.id.btnLogout);
         switchReminder   = view.findViewById(R.id.switchReminder);
+        switchBudget     = view.findViewById(R.id.switchBudget);
+        layoutBudgetInput = view.findViewById(R.id.layoutBudgetInput);
+        edtBudget        = view.findViewById(R.id.edtBudget);
+
+        // 📌 Gắn PriceFormatWatcher tự động format ngân sách
+        edtBudget.addTextChangedListener(new PriceFormatWatcher(edtBudget));
+
+        // 📌 Toggle hiển thị ô nhập ngân sách khi bật/tắt switch
+        switchBudget.setOnCheckedChangeListener((btn, isChecked) -> {
+            layoutBudgetInput.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+        });
         
         prefs = requireActivity().getSharedPreferences("homnayangi_prefs", Context.MODE_PRIVATE);
 
@@ -157,6 +173,17 @@ public class ProfileFragment extends Fragment {
                         if (!TextUtils.isEmpty(dob))    edtDob.setText(dob);
                         if (!TextUtils.isEmpty(gender)) spinnerGender.setText(gender, false);
                         if (!TextUtils.isEmpty(phone))  edtPhone.setText(phone);
+
+                        // 📌 Load cài đặt ngân sách tháng
+                        Boolean budgetEnabled = doc.getBoolean("budgetEnabled");
+                        Double budget = doc.getDouble("monthlyBudget");
+                        if (budgetEnabled != null && budgetEnabled) {
+                            switchBudget.setChecked(true);
+                            layoutBudgetInput.setVisibility(View.VISIBLE);
+                            if (budget != null && budget > 0) {
+                                edtBudget.setText(new DecimalFormat("#,###").format(budget.intValue()));
+                            }
+                        }
                     }
                 });
     }
@@ -215,6 +242,15 @@ public class ProfileFragment extends Fragment {
         data.put("dob", dob);
         data.put("gender", gender);
         data.put("phone", phone);
+
+        // 📌 Lưu cài đặt ngân sách tháng
+        data.put("budgetEnabled", switchBudget.isChecked());
+        if (switchBudget.isChecked()) {
+            double budgetVal = PriceFormatWatcher.getCleanValue(edtBudget);
+            data.put("monthlyBudget", budgetVal);
+        } else {
+            data.put("budgetEnabled", false);
+        }
 
         // Cập nhật tên trong Firebase Auth
         currentUser.updateProfile(new UserProfileChangeRequest.Builder()
