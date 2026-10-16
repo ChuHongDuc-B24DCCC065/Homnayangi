@@ -57,13 +57,16 @@ public class FoodLibraryAdapter extends RecyclerView.Adapter<FoodLibraryAdapter.
         String category = doc.getString("category");
         Double p = doc.getDouble("price");
         double price = p != null ? p : 0;
-        String recipe = doc.getString("recipe");
+        // 📌 Đọc "note" (mới) với fallback "recipe" (cũ) — backward compat
+        String recipe = doc.getString("note");
+        if (recipe == null) recipe = doc.getString("recipe");
+        final String note = recipe != null ? recipe : "";
 
         holder.tvName.setText("🍽️ " + (name != null ? name : ""));
         holder.tvCategory.setText(category != null ? category : "");
         DecimalFormat fmt = new DecimalFormat("#,###");
         holder.tvPrice.setText(fmt.format(price) + " VNĐ");
-        holder.tvRecipe.setText(recipe != null ? recipe : "");
+        holder.tvRecipe.setText(note);
 
         // Load ảnh món ăn từ URL (trường imageUrl trong Firestore)
         String imageUrl = doc.getString("imageUrl");
@@ -143,7 +146,7 @@ public class FoodLibraryAdapter extends RecyclerView.Adapter<FoodLibraryAdapter.
                 }
             } else {
                 // CHƯA CÓ -> THÊM VÀO DANH SÁCH
-                repo.addFood(name, category, price, recipe, imageUrl, new FoodRepository.OnCompleteListener() {
+                repo.addFood(name, category, price, note, imageUrl, new FoodRepository.OnCompleteListener() {
                     @Override
                     public void onSuccess() {
                         // Firebase snapshot listener sẽ tự cập nhật userFoodMap,

@@ -1,10 +1,13 @@
 package com.example.homnayangi.activities;
 
 import android.app.AlertDialog;
+import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -15,26 +18,33 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.homnayangi.R;
 import com.example.homnayangi.adapters.FoodAdapter;
 import com.example.homnayangi.repository.FoodRepository;
+import com.example.homnayangi.utils.CloudinaryUploader;
 import com.example.homnayangi.utils.MapUtils;
+import com.example.homnayangi.utils.PriceFormatWatcher;
 import com.example.homnayangi.utils.VietnameseUtils;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.firebase.firestore.DocumentSnapshot;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -61,6 +71,22 @@ public class FoodListFragment extends Fragment implements FoodAdapter.OnFoodItem
     // Debounce handler cho tìm kiếm
     private final Handler searchHandler = new Handler(Looper.getMainLooper());
     private Runnable searchRunnable;
+
+    // 📌 Image upload fields
+    private Uri selectedFoodImageUri = null;
+    private ImageView imgFoodPreview;
+    private View cardFoodPreview;
+
+    private final ActivityResultLauncher<Intent> foodImagePicker =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    selectedFoodImageUri = result.getData().getData();
+                    if (imgFoodPreview != null) {
+                        if (cardFoodPreview != null) cardFoodPreview.setVisibility(View.VISIBLE);
+                        Glide.with(this).load(selectedFoodImageUri).into(imgFoodPreview);
+                    }
+                }
+            });
 
     @Nullable
     @Override
@@ -283,13 +309,41 @@ public class FoodListFragment extends Fragment implements FoodAdapter.OnFoodItem
                 android.R.layout.simple_dropdown_item_1line, new ArrayList<>(categories));
         edtCategory.setAdapter(catAdapter);
 
-        if (doc != null) {
+        // 📌 Image picker setup
+        imgFoodPreview = dialogView.findViewById(R.id.imgFoodPreview);
+        cardFoodPreview = dialogView.findViewById(R.id.cardFoodPreview);
+        Button btnPickFoodImage = dialogView.findViewById(R.id.btnPickFoodImage);
+        selectedFoodImageUri = null;
+
+        // 📌 Gắn PriceFormatWatcher tự động format số tiền
+        edtPrice.addTextChangedListener(new PriceFormatWatcher(edtPrice));
+
+        if (btnPickFoodImage != null) {
+            btnPickFoodImage.setOnClickListener(v -> {
+                Intent pickIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                foodImagePicker.launch(pickIntent);
+            });
+        }
+
+        boolean isEdit = doc != null;
+
+        if (isEdit) {
             tvTitle.setText("Sửa món ăn");
             edtName.setText(doc.getString("name"));
             edtCategory.setText(doc.getString("category"));
             Double p = doc.getDouble("price");
-            edtPrice.setText(p != null ? String.valueOf(p.intValue()) : "");
-            edtRecipe.setText(doc.getString("recipe"));
+            edtPrice.setText(p != null ? new DecimalFormat("#,###").format(p.intValue()) : "");
+            // 📌 Đọc "note" trước, fallback "recipe" cho dữ liệu cũ
+            String noteVal = doc.getString("note");
+            if (noteVal == null) noteVal = doc.getString("recipe");
+            edtRecipe.setText(noteVal);
+
+            // If editing and has existing image, show it
+            String existingImg = doc.getString("imageUrl");
+            if (existingImg != null && !existingImg.isEmpty() && imgFoodPreview != null) {
+                if (cardFoodPreview != null) cardFoodPreview.setVisibility(View.VISIBLE);
+                Glide.with(this).load(existingImg).into(imgFoodPreview);
+            }
         }
 
         btnCancel.setOnClickListener(v -> dialog.dismiss());
@@ -297,7 +351,6 @@ public class FoodListFragment extends Fragment implements FoodAdapter.OnFoodItem
         btnSave.setOnClickListener(v -> {
             String name     = edtName.getText().toString().trim();
             String category = edtCategory.getText().toString().trim();
-            String priceStr = edtPrice.getText().toString().trim();
             String recipe   = edtRecipe.getText().toString().trim();
 
             if (TextUtils.isEmpty(name)) {
@@ -305,30 +358,45 @@ public class FoodListFragment extends Fragment implements FoodAdapter.OnFoodItem
                 return;
             }
 
-            double price = 0;
-            try { price = Double.parseDouble(priceStr); } catch (NumberFormatException ignored) {}
-            final double finalPrice = price;
+            double price = PriceFormatWatcher.getCleanValue(edtPrice);
+            final String fName = name;
+            final String fCategory = category;
+            final String fRecipe = recipe;
 
             btnSave.setEnabled(false);
 
+            FoodRepository.OnCompleteListener foodCallback = new FoodRepository.OnCompleteListener() {
+                @Override public void onSuccess() {}
+                @Override public void onFailure(String error) {
+                    if (getContext() != null)
+                        Toast.makeText(getContext(), "Lỗi: " + error, Toast.LENGTH_SHORT).show();
+                }
+            };
+
             if (doc == null) {
-                repo.addFood(name, category, finalPrice, recipe, new FoodRepository.OnCompleteListener() {
-                    @Override public void onSuccess() {}
-                    @Override public void onFailure(String error) {
-                        if (getContext() != null)
-                            Toast.makeText(getContext(), "Lỗi: " + error, Toast.LENGTH_SHORT).show();
-                    }
-                });
+                // Thêm mới
+                if (selectedFoodImageUri != null) {
+                    btnSave.setText("Đang lưu...");
+                    CloudinaryUploader.upload(requireContext(), selectedFoodImageUri, "foods",
+                            new CloudinaryUploader.UploadListener() {
+                                @Override
+                                public void onSuccess(String imageUrl) {
+                                    repo.addFood(fName, fCategory, price, fRecipe, imageUrl, foodCallback);
+                                    dialog.dismiss();
+                                }
+                                @Override
+                                public void onError(String msg) {
+                                    repo.addFood(fName, fCategory, price, fRecipe, "", foodCallback);
+                                    dialog.dismiss();
+                                }
+                            });
+                } else {
+                    repo.addFood(fName, fCategory, price, fRecipe, foodCallback);
+                    dialog.dismiss();
+                }
                 Toast.makeText(getContext(), "Đang thêm...", Toast.LENGTH_SHORT).show();
-                dialog.dismiss();
             } else {
-                repo.updateFood(docId, name, category, finalPrice, recipe, new FoodRepository.OnCompleteListener() {
-                    @Override public void onSuccess() {}
-                    @Override public void onFailure(String error) {
-                        if (getContext() != null)
-                            Toast.makeText(getContext(), "Lỗi: " + error, Toast.LENGTH_SHORT).show();
-                    }
-                });
+                repo.updateFood(docId, fName, fCategory, price, fRecipe, foodCallback);
                 Toast.makeText(getContext(), "Đang cập nhật...", Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
             }

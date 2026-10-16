@@ -79,5 +79,8 @@ dependencies {
 
     // Glide - load ảnh từ URL
     implementation(libs.glide)
+
+    // Cloudinary - upload ảnh
+    implementation("com.cloudinary:cloudinary-android:3.0.2")
 }
 
