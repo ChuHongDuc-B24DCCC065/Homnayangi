@@ -8,6 +8,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -82,7 +85,18 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
             holder.tvFoodRecipe.setVisibility(View.GONE);
         }
 
-        // Trạng thái nút yêu thích
+        // 📌 Load ảnh món ăn (nếu có)
+        String imageUrl = doc.getString("imageUrl");
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            holder.imgFood.setVisibility(View.VISIBLE);
+            Glide.with(holder.imgFood.getContext())
+                    .load(imageUrl)
+                    .transition(DrawableTransitionOptions.withCrossFade())
+                    .fitCenter()
+                    .into(holder.imgFood);
+        } else {
+            holder.imgFood.setVisibility(View.GONE);
+        }
         boolean favorite = isFav != null && isFav;
         holder.imgFavorite.setImageResource(
                 favorite ? android.R.drawable.btn_star_big_on
@@ -138,12 +152,13 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
     }
 
     public static class FoodViewHolder extends RecyclerView.ViewHolder {
-        ImageView imgFavorite, imgAddToRoulette;
+        ImageView imgFavorite, imgAddToRoulette, imgFood;
         View btnEditAction, btnDeleteAction, btnFavoriteAction, btnAddToRouletteAction, btnFindRestaurantAction;
         TextView tvFoodName, tvCategory, tvPrice, tvFoodRecipe, tvAddToRoulette;
 
         public FoodViewHolder(@NonNull View itemView) {
             super(itemView);
+            imgFood           = itemView.findViewById(R.id.imgFood);
             imgFavorite       = itemView.findViewById(R.id.imgFavorite);
             btnEditAction     = itemView.findViewById(R.id.btnEditAction);
             btnDeleteAction   = itemView.findViewById(R.id.btnDeleteAction);

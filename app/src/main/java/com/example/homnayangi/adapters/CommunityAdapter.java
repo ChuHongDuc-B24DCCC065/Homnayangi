@@ -116,14 +116,14 @@ public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.Post
         holder.tvPostNote.setText(note);
         holder.tvPostNote.setVisibility(note.isEmpty() ? View.GONE : View.VISIBLE);
 
-        // Load ảnh bài đăng (nếu có)
+        // 📌 Load ảnh bài đăng — hiện full ảnh giữ tỉ lệ gốc
         String imageUrl = doc.getString("imageUrl");
         if (imageUrl != null && !imageUrl.isEmpty()) {
             holder.imgPostFood.setVisibility(View.VISIBLE);
             Glide.with(holder.imgPostFood.getContext())
                     .load(imageUrl)
                     .transition(DrawableTransitionOptions.withCrossFade())
-                    .centerCrop()
+                    .fitCenter()
                     .into(holder.imgPostFood);
         } else {
             holder.imgPostFood.setVisibility(View.GONE);
